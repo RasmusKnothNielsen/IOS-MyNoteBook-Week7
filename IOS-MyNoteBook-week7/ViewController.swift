@@ -16,6 +16,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     @IBOutlet weak var inputTextView: UITextView!
     @IBOutlet weak var tableView: UITableView!
     
+    let storage = Storage()
     
     // Initialize empty String array
     var textArray = [String]();
@@ -35,8 +36,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        textArray.append("Hello")
-        textArray.append("How are you?")
+        Storage.read()
+        
         // Set these two to self, so the tableview references the app itself
         tableView.dataSource = self
         tableView.delegate = self
@@ -52,19 +53,23 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         // Check if we are in editing mode
         if editingRow
         {
-            textArray[rowThatIsBeingEdited] = userInput;
+            //textArray[rowThatIsBeingEdited] = userInput;
+            Storage.update(str: userInput, index: rowThatIsBeingEdited)
         }
         else
         {
             // Add the string to the textArray
-            textArray.append(userInput);
+            //textArray.append(userInput);
+            Storage.addItem(str: userInput)
         }
         
         // Saving to file
-        saveStringToFile(str: userInput, fileName: file);
+        //storage.saveStringToFile(str: userInput, fileName: file);
+        //Storage.addItem(str: userInput)
         
         // Reading from file
-        readStringFromFile(fileName: file);
+        //storage.readStringFromFile(fileName: file);
+        textArray = Storage.read()
 
         // Reload data to refresh the Table View
         tableView.reloadData();
@@ -79,7 +84,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     // Function that returns the number of Strings in the array
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return textArray.count;
+        return Storage.count();
     }
     
     // Function that displays the cells in the Table View
@@ -90,7 +95,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         // cells, without filling out the system memory unnecessary.
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell1")
         // Assign string from textArray to the cell
-        cell?.textLabel?.text = textArray[indexPath.row]
+        cell?.textLabel?.text = Storage.getItem(index: indexPath.row)
         // return the cell, and unwrap it with the !, since it is an Optional
         return cell!
     }
@@ -99,7 +104,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     // Function to handle cell pressed, so we can edit it
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // Transfer the text from the row to the user input field
-        inputTextView.text = textArray[indexPath.row];
+        inputTextView.text = Storage.getItem(index: indexPath.row)
         // Set editing to true
         editingRow = true;
         rowThatIsBeingEdited = indexPath.row;
@@ -111,48 +116,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
       if editingStyle == .delete
       {
         // Remove the String at the given index
-        self.textArray.remove(at: indexPath.row)
+        //self.textArray.remove(at: indexPath.row)
+        Storage.remove(index: indexPath.row)
         // Delete the given row from the table view
         self.tableView.deleteRows(at: [indexPath], with: .automatic)
       }
-    }
-
-    // SAVING
-    func saveStringToFile(str:String, fileName:String) {
-        // Read the filepath
-        let filePath = getDocumentDir().appendingPathComponent(fileName)
-        do {
-            // Try to write the string to the provided file
-            try str.write(to: filePath, atomically: true, encoding: .utf8)
-            print("OK writing string: \(str)")
-        } catch {
-            print("error writing string: \(str)")
-        }
-    }
-    
-    // READING
-    // Where we return a string
-    func readStringFromFile(fileName:String) -> String {
-        // Read the filepath
-        let filePath = getDocumentDir().appendingPathComponent(fileName);
-        do {
-            // Get the content from the file and save it as string
-            let string = try String(contentsOf: filePath, encoding: .utf8);
-            print("Read the following from file: \(string)")
-            // Return the string
-            return string;
-        }
-        catch {
-            print("Error while reading file \(fileName)")
-        }
-        // If there was an error in reading the file, return "empty"
-        return "empty"
-    }
-    
-    // Function used to get the correct location on the operating system
-    func getDocumentDir() -> URL {
-        let documentDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        return documentDir[0]
     }
 }
 
