@@ -53,22 +53,16 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         // Check if we are in editing mode
         if editingRow
         {
-            //textArray[rowThatIsBeingEdited] = userInput;
+            // If we are, update the already existing note
             Storage.update(str: userInput, index: rowThatIsBeingEdited)
         }
         else
         {
-            // Add the string to the textArray
-            //textArray.append(userInput);
+            // If we are not, create new notw
             Storage.addItem(str: userInput)
         }
         
-        // Saving to file
-        //storage.saveStringToFile(str: userInput, fileName: file);
-        //Storage.addItem(str: userInput)
-        
         // Reading from file
-        //storage.readStringFromFile(fileName: file);
         textArray = Storage.read()
 
         // Reload data to refresh the Table View
@@ -116,7 +110,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
       if editingStyle == .delete
       {
         // Remove the String at the given index
-        //self.textArray.remove(at: indexPath.row)
         Storage.remove(index: indexPath.row)
         // Delete the given row from the table view
         self.tableView.deleteRows(at: [indexPath], with: .automatic)
